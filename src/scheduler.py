@@ -34,14 +34,20 @@ def estimate_cost(start_time, duration_hours, price_curve, power_kw=0.15):
 def find_cheapest_start(duration_hours, deadline, price_curve):
     """
     Step backwards from deadline in 30-minute increments
-    and find the cheapest possible start time.
+    and find the cheapest possible start time that finishes before the deadline.
     """
     best_start = None
     best_cost = float("inf")
+    duration = timedelta(hours=duration_hours)
 
-    # Search backwards 24 hours
-    for i in range(48):
+    # Search backwards 48 hours (96 half-hour steps)
+    for i in range(96):
         candidate_start = deadline - timedelta(minutes=30 * i)
+
+        # Skip impossible start times
+        if candidate_start + duration > deadline:
+            continue
+
         cost = estimate_cost(candidate_start, duration_hours, price_curve)
 
         if cost < best_cost:
